@@ -1,33 +1,67 @@
-HELP.md
+# ===============================
+# Build files
+# ===============================
 target/
-.mvn/wrapper/maven-wrapper.jar
+build/
+*.class
+*.log
+
+# Keep target inside src if needed
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# ===============================
+# Maven Wrapper
+# ===============================
+.mvn/wrapper/maven-wrapper.jar
+
+# ===============================
+# Spring Boot
+# ===============================
+HELP.md
+
+# ===============================
+# Eclipse / STS
+# ===============================
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# ===============================
+# IntelliJ IDEA
+# ===============================
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# ===============================
+# NetBeans
+# ===============================
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# ===============================
+# VS Code
+# ===============================
 .vscode/
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Environment / Secrets
+# ===============================
+.env
+*.properties
+application-local.yml
