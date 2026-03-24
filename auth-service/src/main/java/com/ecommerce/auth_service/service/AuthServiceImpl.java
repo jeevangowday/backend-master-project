@@ -6,11 +6,14 @@ import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.auth_service.dto.AuthResponse;
+import com.ecommerce.auth_service.dto.LoginRequest;
 import com.ecommerce.auth_service.dto.RegisterRequest;
 import com.ecommerce.auth_service.entity.Role;
 import com.ecommerce.auth_service.entity.User;
 import com.ecommerce.auth_service.repository.RoleRepository;
 import com.ecommerce.auth_service.repository.UserRepository;
+import com.ecommerce.auth_service.util.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +24,7 @@ public class AuthServiceImpl implements AuthService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtUtil jwtUtil;
 
 	@Override
 	public void register(RegisterRequest request) {
@@ -39,6 +43,23 @@ public class AuthServiceImpl implements AuthService {
 
 		// 4. Save user
 		userRepository.save(user);
+	}
+	
+	@Override
+	public AuthResponse login(LoginRequest request) {
+
+	    User user = userRepository.findByEmail(request.getEmail())
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+	        throw new RuntimeException("Invalid credentials");
+	    }
+
+	    String token = jwtUtil.generateToken(user.getEmail());
+
+	    return AuthResponse.builder()
+	            .accessToken(token)
+	            .build();
 	}
 
 }
