@@ -1,4 +1,4 @@
-package com.ecommerce.auth_service.service;
+package com.ecommerce.auth_service.serviceImpl;
 
 import java.time.Instant;
 import java.util.Set;
@@ -13,6 +13,7 @@ import com.ecommerce.auth_service.entity.Role;
 import com.ecommerce.auth_service.entity.User;
 import com.ecommerce.auth_service.repository.RoleRepository;
 import com.ecommerce.auth_service.repository.UserRepository;
+import com.ecommerce.auth_service.service.AuthService;
 import com.ecommerce.auth_service.util.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
