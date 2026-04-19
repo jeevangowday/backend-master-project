@@ -1,15 +1,13 @@
 package com.ecommerce.auth_service.security;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.ecommerce.auth_service.serviceImpl.CustomUserDetailsService;
 import com.ecommerce.auth_service.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
@@ -22,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -46,18 +45,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Extract email (identity)
             String email = jwtUtil.extractEmail(token);
-
+            var userDetails = userDetailsService.loadUserByUsername(email);
             // Extract roles from token
-            List<String> roles = jwtUtil.extractRoles(token);
-
-            // Convert roles into Spring Security authorities
-            var authorities = roles.stream()
-                    .map(SimpleGrantedAuthority::new) // Required format
-                    .toList();
 
             // Create authentication object
             UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    new UsernamePasswordAuthenticationToken(email, null, userDetails.getAuthorities());
 
             // Set authentication in security context
             SecurityContextHolder.getContext().setAuthentication(auth);

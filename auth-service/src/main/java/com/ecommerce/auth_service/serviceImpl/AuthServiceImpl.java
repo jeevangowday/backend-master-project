@@ -11,6 +11,9 @@ import com.ecommerce.auth_service.dto.LoginRequest;
 import com.ecommerce.auth_service.dto.RegisterRequest;
 import com.ecommerce.auth_service.entity.Role;
 import com.ecommerce.auth_service.entity.User;
+import com.ecommerce.auth_service.exception.InvalidCredentialsException;
+import com.ecommerce.auth_service.exception.UserAlreadyExistsException;
+import com.ecommerce.auth_service.exception.UserNotFoundException;
 import com.ecommerce.auth_service.repository.RoleRepository;
 import com.ecommerce.auth_service.repository.UserRepository;
 import com.ecommerce.auth_service.service.AuthService;
@@ -32,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
 
 		// 1. Check if user exists
 		userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
-			throw new RuntimeException("User already exists");
+			throw new UserAlreadyExistsException("User already exists");
 		});
 
 		// 2. Get default role
@@ -50,10 +53,10 @@ public class AuthServiceImpl implements AuthService {
 	public AuthResponse login(LoginRequest request) {
 
 	    User user = userRepository.findByEmail(request.getEmail())
-	            .orElseThrow(() -> new RuntimeException("User not found"));
+	            .orElseThrow(() ->  new UserNotFoundException("User not found"));
 
 	    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-	        throw new RuntimeException("Invalid credentials");
+	    	throw new InvalidCredentialsException("Invalid credentials");
 	    }
 
 	    String token = jwtUtil.generateToken(user);
