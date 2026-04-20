@@ -11,6 +11,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.ecommerce.auth_service.security.JwtAuthenticationFilter;
+import com.ecommerce.auth_service.security.OAuth2SuccessHandler;
+import com.ecommerce.auth_service.security.RateLimitingFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final RateLimitingFilter rateLimitingFilter;
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -27,24 +32,27 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	    http
-	        // Disable CSRF (not needed for stateless APIs)
-	        .csrf(csrf -> csrf.disable())
 
-	        // No sessions → JWT based auth
-	        .sessionManagement(session -> session
-	                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-	        )
+		http
+				// Disable CSRF
+				.csrf(csrf -> csrf.disable())
 
-	        // Authorization rules
-	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers("/auth/**").permitAll() // Public endpoints
-	            .anyRequest().authenticated() // Secure everything else
-	        )
+				// Stateless session (JWT)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-	        // Add JWT filter before default auth filter
-	        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+				// Authorization
+				.authorizeHttpRequests(
+						auth -> auth.requestMatchers("/auth/**", "/oauth2/**").permitAll().anyRequest().authenticated())
 
-	    return http.build();
+				// OAuth2 login
+				.oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler))
+
+				// ✅ FIRST → Rate Limiting
+				.addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+
+				// ✅ SECOND → JWT Filter
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
 	}
 }
